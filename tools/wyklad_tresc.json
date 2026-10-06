@@ -1,0 +1,227 @@
+[
+  {
+    "title": "Landsat 8\nAnaliza i publikacja mapy",
+    "minutes": 2,
+    "body": "Wykład 90 minut\nLaboratorium 90 minut\nKraków i okolice, 7 sierpnia 2013",
+    "image": null,
+    "notes": "Przedstaw efekt zajęć: obliczenia w Pythonie i mapa na koncie AGH. Zapowiedz, że to analiza wskaźników, nie model uczenia maszynowego. Uczestnicy powinni znać podstawy tablic NumPy. IBIS pozostaje poza zakresem.",
+    "kind": "cover",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "Efekt końcowy ćwiczenia",
+    "minutes": 5,
+    "body": "NDVI, NDBI i MNDWI w jednej mapie\nGeoTIFF do dalszej analizy\nPublikacja na koncie UNIX AGH",
+    "image": null,
+    "notes": "Otwórz przygotowaną stronę lokalnie. Przełącz cztery warstwy, pokaż legendę i przezroczystość. Wyjaśnij, że notatnik odtwarza te same wyniki. Zapytaj studentów, czy sam kolor mapy wystarczy do określenia pokrycia terenu. Zarezerwuj dwie minuty na odpowiedzi.",
+    "kind": "text",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "Scena i paczka danych",
+    "minutes": 4,
+    "body": "2013-08-07, Collection 1 Surface Reflectance\n1583 × 1982 piksele, rozdzielczość 30 m\nB2–B6, pixel_qa, radsat_qa i XML",
+    "image": null,
+    "notes": "Pokaż nazwy plików. Zwróć uwagę na sr_band i identyfikator L1TP w nazwie sceny. Dane zostały wycięte prostokątem bez resamplingu. XML opisuje pełną scenę, ale georeferencję wycinka czytamy z TIFF. Nie pobieramy archiwalnej Collection 1 na zajęciach, ponieważ używamy dostarczonych danych.",
+    "kind": "text",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "Kanały użyte w ćwiczeniu",
+    "minutes": 4,
+    "body": "B2  niebieski\nB3  zielony\nB4  czerwony\nB5  NIR\nB6  SWIR1",
+    "image": null,
+    "notes": "Powiąż kanały z RGB i wzorami wskaźników. Zapytaj, dlaczego RGB nie pokazuje wszystkiego, co rejestruje satelita. Nie myl numeracji pasm Landsat 8 z Landsat 5. Kanał B5 jest bliską podczerwienią, nie kanałem termalnym.",
+    "kind": "bands",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "Georeferencja rastra",
+    "minutes": 4,
+    "body": "EPSG:32634: metry w układzie UTM\nTransformacja wiąże wiersz i kolumnę z położeniem\nGeoJSON granicy: EPSG:4326",
+    "image": null,
+    "notes": "Wyjaśnij znaczenie CRS i transformacji afinicznej. Jeden piksel ma 30 m. Przypisanie CRS to interpretacja istniejących liczb, reprojekcja to przeliczenie. Brak PRJ w oryginale został jawnie uzupełniony na podstawie zgodności ze starymi rastrami clipped; nie przedstawiaj tej granicy jako zweryfikowanej urzędowej geometrii.",
+    "kind": "text",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "Przycięcie do granicy",
+    "minutes": 4,
+    "body": "Prostokąt ogranicza koszt odczytu\nMaska wielokąta wyznacza obszar analizy\nPoza granicą zapisujemy brak danych",
+    "image": "band5_dn.png",
+    "notes": "Pokaż prostokątny obraz B5. Omów odczyt tylko niezbędnej części sceny. Następnie transform_geom przelicza granicę, a geometry_mask tworzy maskę środków pikseli. Zmiana all_touched może zmienić liczbę pikseli na granicy.",
+    "kind": "image",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "Skalowanie reflektancji",
+    "minutes": 4,
+    "body": "ρ = DN × skala + offset\n6000 × 0.0001 = 0.6\nParametry pochodzą z XML",
+    "image": null,
+    "notes": "Przelicz przykład na tablicy. W tej scenie add_offset nie występuje, więc przyjmujemy 0. C2 ma inne parametry, w tym offset. Nie opisuj 10000 jako maksimum wszystkich pikseli. XML dopuszcza wartości ujemne. Zapytaj, kiedy wspólna skala skraca się w ilorazie i dlaczego offset już się nie skraca.",
+    "kind": "text",
+    "source": "ESPA XML; https://www.usgs.gov/faqs/how-do-i-use-a-scale-factor-landsat-level-2-science-products"
+  },
+  {
+    "title": "Maska jakości",
+    "minutes": 5,
+    "body": "W granicy: 1 729 364 pikseli\nWażne: 1 729 266\nWoda pozostaje w analizie",
+    "image": "quality.png",
+    "notes": "Wyjaśnij flagi fill, cień, śnieg, chmury, przesłonięcie terenu i wysoką pewność cirrus. Wskaż osobną kontrolę nasycenia B2–B6. Odrzucono 98 pikseli w granicy, więc obraz jest prawie cały zielony. Białe tło oznacza obszar poza granicą. Poproś o rozkodowanie wartości 4 jako bitu wody.",
+    "kind": "image",
+    "source": "Bity pixel_qa i radsat_qa w dołączonym ESPA XML; outputs/summary.json"
+  },
+  {
+    "title": "Zero, wartość ujemna i NoData",
+    "minutes": 4,
+    "body": "0 może być poprawną obserwacją\nNaN oznacza brak ważnego wyniku\nMianownik bliski zeru wymaga maski",
+    "image": "band5_masked.png",
+    "notes": "Porównaj obraz po maskowaniu z poprzednim. Wyjaśnij różnicę między zerową reflektancją a brakiem danych. Znormalizowana różnica równych niezerowych kanałów daje zero. Dwa zera dają wynik nieokreślony. W kodzie granica bezpiecznego mianownika to 1e-6.",
+    "kind": "image",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "RGB jako odniesienie",
+    "minutes": 4,
+    "body": "Kanały 4 / 3 / 2\nKontrast 2–98 percentyl\nObraz pomaga interpretować wskaźniki",
+    "image": "rgb.png",
+    "notes": "Wskaż widoczne struktury pól, lasów i zabudowy. Rozciągnięcie kontrastu dotyczy tylko wyświetlania, osobno dla każdego kanału. Nie używamy tak zmodyfikowanych wartości do obliczeń wskaźników. Podkład internetowy może pokazywać nowszy stan terenu niż scena.",
+    "kind": "image",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "Znormalizowana różnica",
+    "minutes": 4,
+    "body": "I = (A − B) / (A + B)\nA = 0.6, B = 0.2: I = 0.5\nA = B ≠ 0: I = 0",
+    "image": null,
+    "notes": "Przykłady są dydaktyczne, nie są zmierzonymi pikselami mapy. Poproś studentów o obliczenie wyniku dla odwróconej pary 0.2 i 0.6. Wynik -0.5 pozostaje poprawny. Przy ujemnych wejściach iloraz może wyjść poza [-1,1]. Kod nie obcina wyników analitycznych.",
+    "kind": "text",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "NDVI: roślinność",
+    "minutes": 4,
+    "body": "NDVI = (B5 − B4) / (B5 + B4)\nŚrednia w obszarze: 0.618\nInterpretacja zależy od daty i pokrycia",
+    "image": "ndvi.png",
+    "notes": "Pokaż przestrzenny rozkład wysokich wartości. Zapytaj, czy każdy zielony piksel jest lasem. Wysoki NDVI nie identyfikuje gatunku ani nie jest samodzielną diagnozą zdrowia. Wskaż trzy piksele spoza [-1,1] w raporcie; na mapie kolor ograniczono, ale wartości GeoTIFF zachowano.",
+    "kind": "image",
+    "source": "outputs/summary.json; https://www.usgs.gov/landsat-missions/landsat-normalized-difference-vegetation-index"
+  },
+  {
+    "title": "NDBI: zabudowa i gleba",
+    "minutes": 4,
+    "body": "NDBI = (B6 − B5) / (B6 + B5)\nDodatni wynik wymaga sprawdzenia RGB\nPróg nie jest gotową klasyfikacją",
+    "image": "ndbi.png",
+    "notes": "Omów możliwość pomylenia odsłoniętej gleby z zabudową. Średnia wynosi -0.1905 i nie opisuje sama w sobie urbanizacji regionu. Przykład na tablicy: 0.35 i 0.20 daje około 0.273. Nie zakładaj, że każdy dodatni piksel jest budynkiem.",
+    "kind": "image",
+    "source": "Zha, Gao, Ni (2003), DOI 10.1080/01431160210144570; outputs/summary.json"
+  },
+  {
+    "title": "MNDWI: wody powierzchniowe",
+    "minutes": 4,
+    "body": "MNDWI = (B3 − B6) / (B3 + B6)\nKanał zielony i SWIR1\nNDWI McFeetersa używa zielonego i NIR",
+    "image": "mndwi.png",
+    "notes": "Wyjaśnij korektę nazewnictwa starego kodu: B3/B6 odpowiada MNDWI. Zaproponuj odszukanie rzeki i porównanie z RGB. Wąskie cieki mogą dawać piksele mieszane przy 30 m. Dodatni wynik nie zastępuje weryfikacji terenowej.",
+    "kind": "image",
+    "source": "Xu (2006), DOI 10.1080/01431160600589179; dane projektu"
+  },
+  {
+    "title": "Statystyki tego samego obszaru",
+    "minutes": 4,
+    "body": "Średnia nie pokazuje rozmieszczenia przestrzennego\nWspólna maska ułatwia porównanie\nHistogram ujawnia rozkład wartości",
+    "image": null,
+    "notes": "Pokaż edytowalny wykres średnich z summary.json. Uczestnicy powinni równolegle zajrzeć do histogramów w notatniku/PDF. Zwróć uwagę na różne znaczenia poszczególnych indeksów: porównanie wysokości słupków nie oznacza rankingu jakości. Średnie dotyczą wyłącznie ważnych pikseli.",
+    "kind": "chart",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "Ograniczenia interpretacji",
+    "minutes": 3,
+    "body": "Scena przedstawia 2013 rok\nPiksele 30 m mogą mieszać różne obiekty\nMaska QA nie usuwa każdej niepewności\nWskaźnik nie jest etykietą klasy",
+    "image": null,
+    "notes": "Poproś o dwa przykłady błędnych wniosków: aktualna powierzchnia zabudowy z dawnej sceny i utożsamienie NDBI>0 z budynkami. Wskaż znaczenie walidacji niezależnymi danymi. Temat MODIS można zasygnalizować jako dalszą analizę czasową, bez dodawania ćwiczenia do tego laboratorium.",
+    "kind": "text",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "GeoTIFF do dalszych obliczeń",
+    "minutes": 3,
+    "body": "float32 i NoData = −9999\nCRS i transformacja z wejścia\nOdczyt kontrolny sprawdza wartości",
+    "image": null,
+    "notes": "Pokaż pliki NDVI.tif i NDVI_display.tif. Ten drugi zapisuje kolory, nie NDVI. Omów test allclose z equal_nan=True oraz sprawdzenie CRS i transformacji. Student powinien rozumieć, dlaczego screenshot mapy nie zastępuje danych.",
+    "kind": "text",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "Kolor i przezroczystość",
+    "minutes": 3,
+    "body": "Zakres legendy: −1 do 1\nRGBA: kolor oraz kanał alfa\nBrak danych pozostaje przezroczysty",
+    "image": null,
+    "notes": "Wyjaśnij wspólny zakres legendy. Dwie mapy z automatycznym min/max mogą wyglądać podobnie mimo różnych wartości. Przedstaw przykład NDVI 1.0062: numerycznie pozostaje w TIFF, a na mapie dostaje skrajny kolor. Odróżnij alfa od globalnej przezroczystości suwaka.",
+    "kind": "text",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "Kafelki XYZ",
+    "minutes": 4,
+    "body": "256 × 256 pikseli, EPSG:3857\nz / x / y.png, y rośnie na południe\nZoom 9–12: 512 plików dla czterech warstw",
+    "image": null,
+    "notes": "Omów piramidę zoomów i wpływ maksymalnego zoomu na liczbę plików. Pomieszanie XYZ z TMS odwraca indeks y. Reprojekcja odbywa się w Pythonie przez Rasterio. Nie zwiększamy informacyjnej rozdzielczości obrazu, kiedy użytkownik powiększa kafelki do zoomu 17.",
+    "kind": "text",
+    "source": "Kod xyz_tiles; https://rasterio.readthedocs.io/en/stable/topics/reproject.html; https://leafletjs.com/reference.html"
+  },
+  {
+    "title": "Kompletna mapa WWW",
+    "minutes": 3,
+    "body": "index.html oraz katalogi tiles i vendor\nWybór warstwy, legenda i przezroczystość\nPodkład OpenStreetMap wymaga internetu",
+    "image": null,
+    "notes": "Przeprowadź krótką demonstrację strony. Nie trzeba instalować Pythona na serwerze AGH, ponieważ przesyłamy statyczne pliki. Bibliotekę Leaflet dołączono lokalnie. Zachowujemy informacje o autorstwie podkładu. Sama publikacja HTML bez tiles prowadzi do pustej mapy.",
+    "kind": "text",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "Podgląd lokalny",
+    "minutes": 3,
+    "body": "python -m http.server 8000\n--bind 127.0.0.1 --directory outputs/site\nhttp://127.0.0.1:8000/",
+    "image": null,
+    "notes": "Dwie pierwsze linie na slajdzie stanowią jedno polecenie. W Markdown jest gotowy blok do skopiowania. Wyjaśnij, dlaczego nie używać file:// i że serwer pozostaje zajęty do Ctrl+C. Drugie okno terminala służy do SSH/SCP. Przy zajętym porcie wybieramy 8001.",
+    "kind": "command",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "SSH i konta AGH",
+    "minutes": 3,
+    "body": "Student: student.agh.edu.pl\nProwadzący: galaxy.agh.edu.pl\nPołączenie z sieci AGH lub przez VPN",
+    "image": null,
+    "notes": "Wyjaśnij rozdział hosta SSH i WWW. Dla galaxy WWW to home.agh.edu.pl/~login. Strony studentów są dostępne w sieci AGH/VPN. Używamy loginu UNIX bez sufiksu @student. Pierwsze połączenie wymaga sprawdzenia klucza serwera. Nie zapisujemy haseł w notatniku.",
+    "kind": "text",
+    "source": "https://cri.agh.edu.pl/uslugi/konta-unix, sprawdzono 30.09.2026"
+  },
+  {
+    "title": "SCP i sprawdzenie publikacji",
+    "minutes": 3,
+    "body": "Osobny katalog public_html/landsat-DATA\nPrzesyłamy całą zawartość outputs/site\nSprawdzamy URL i wszystkie warstwy",
+    "image": null,
+    "notes": "Pokaż polecenie scp -r outputs/site/. i składnię login@host:ścieżka. Nowy katalog chroni istniejącą stronę główną. Uprawnienia katalogów 755, plików 644. HTTP 200 dla index.html nie dowodzi poprawnego przesłania kafelków. Pełne polecenia są w notatniku, PDF i Markdown.",
+    "kind": "text",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "Laboratorium: 90 minut",
+    "minutes": 3,
+    "body": "0–40 min: dane, CRS i jakość\n40–55 min: wskaźniki\n55–70 min: mapa lokalna\n70–90 min: publikacja i oddanie",
+    "image": null,
+    "notes": "Przypomnij konieczność przygotowania środowiska przed zajęciami. Każdy student ma uruchomić notatnik i zrozumieć najważniejszy fragment np.divide. Modyfikacja progu NDVI jest krótkim eksperymentem. Rezultat: URL, notatnik, trzy wnioski. Gdy konto nie działa, zachowujemy paczkę strony, ale nie udajemy publikacji.",
+    "kind": "text",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  },
+  {
+    "title": "Pytania sprawdzające",
+    "minutes": 2,
+    "body": "Dlaczego 0 nie jest NoData?\nCzy dodatni NDBI oznacza budynek?\nCo trzeba przesłać oprócz index.html?\nCzy zoom 17 dodaje szczegóły?",
+    "image": null,
+    "notes": "Odpowiedzi: zero może być ważną wartością; dodatni NDBI może oznaczać glebę; potrzebne są tiles, vendor i pliki danych strony; powiększenie nie zmienia rozdzielczości źródłowej. Zakończ wskazaniem konspektu i notatnika. Źródła naukowe oraz dokumentacja znajdują się w końcowej części PDF i notatnika.",
+    "kind": "text",
+    "source": "Dane projektu NASA/Landsat8 i kod LABOLATORIUM/src/landsat_lab.py"
+  }
+]

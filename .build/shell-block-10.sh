@@ -1,0 +1,5 @@
+ssh "${AGH_LOGIN}@${AGH_HOST}" "test -f public_html/${AGH_FOLDER}/index.html && test -f public_html/${AGH_FOLDER}/vendor/leaflet.js && find public_html/${AGH_FOLDER}/tiles -name '*.png' | wc -l"
+AGH_URL="${AGH_WEB}/~${AGH_LOGIN}/${AGH_FOLDER}/"
+printf '%s\n' "$AGH_URL"
+curl -I "$AGH_URL"
+open "$AGH_URL"

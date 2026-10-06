@@ -1,0 +1,4 @@
+Fontconfig warning: no <cachedir> elements found. Check configuration.
+Fontconfig warning: adding <cachedir>/@.__________________________________________________OOO/var/cache/fontconfig</cachedir>
+Fontconfig warning: adding <cachedir prefix="xdg">fontconfig</cachedir>
+convert /Users/owerko/PycharmProjects/NASA/LABOLATORIUM/materials/wyklad_landsat_90min.pptx as a Impress document -> /Users/owerko/PycharmProjects/NASA/LABOLATORIUM/.build/pptx-render/wyklad_landsat_90min.pdf using filter : impress_pdf_Export
