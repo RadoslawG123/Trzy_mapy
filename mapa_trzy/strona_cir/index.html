@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8">
+    <title>Analiza Krakowa - CIR & NDBI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        .leaflet-sbs-range { cursor: ew-resize !important; background-color: #d32f2f !important; }
+        
+        .map-title {
+            position: absolute; top: 10px; left: 50px; z-index: 1000;
+            background: rgba(0,0,0,0.8); color: white; padding: 10px 20px;
+            border-radius: 5px; font-weight: bold; font-size: 16px;
+        }
+        
+        /* Panel wyboru wskaźnika w lewym górnym rogu pod tytułem/zoomem */
+        .control-panel {
+            position: absolute; top: 70px; left: 50px; z-index: 1000;
+            background: rgba(255,255,255,0.95); padding: 15px; border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3); font-size: 14px;
+        }
+
+        .legend-box {
+            position: absolute; bottom: 30px; right: 20px; z-index: 1000;
+            background: rgba(255,255,255,0.9); padding: 15px; border-radius: 5px;
+            font-size: 14px; box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="map-title">Kraków: Analiza Wielowarstwowa</div>
+    
+    <div class="control-panel">
+        <b>Wybierz wskaźnik (prawa strona):</b><br><br>
+        <label><input type="radio" name="layer" value="cir" checked onchange="zmienWarstwe(this.value)"> 🌲 Podczerwień (CIR - Roślinność)</label><br>
+        <label><input type="radio" name="layer" value="ndbi" onchange="zmienWarstwe(this.value)"> 🏢 Wskaźnik NDBI (Zabudowa/Beton)</label>
+    </div>
+
+    <div class="legend-box">
+        <b>Legenda CIR:</b><br>
+        <span style="color:red; font-weight:bold;">🟥 Czerwony:</span> Roślinność<br>
+        <span style="color:gray; font-weight:bold;">⬜ Jasny:</span> Beton<br><br>
+        <b>Legenda NDBI:</b><br>
+        <span style="color:orange; font-weight:bold;">🟧 Jasny/Biały:</span> Zabudowa
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/digidem/leaflet-side-by-side/leaflet-side-by-side.min.js"></script>
+
+    <script>
+        var map = L.map('map').setView([50.0614, 19.9383], 11);
+
+        // Skala mapy w lewym dolnym rogu
+        L.control.scale({ position: 'bottomleft', metric: true, imperial: false }).addTo(map);
+
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 18, attribution: '© Esri'
+        }).addTo(map);
+
+        var prawdziweKolory = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 17, attribution: '© Esri'
+        }).addTo(map);
+
+        // Warstwa CIR (wewnątrz folderu strona_cir)
+        var podczerwienCIR = L.tileLayer('./{z}/{x}/{y}.png', { 
+            tms: true, 
+            maxNativeZoom: 11, 
+            maxZoom: 17 
+        });
+
+        // Warstwa NDBI (w folderze obok: public_html/ndbi_tiles)
+        var wskaznikNDBI = L.tileLayer('../ndbi_tiles/{z}/{x}/{y}.png', { 
+            tms: true, 
+            maxNativeZoom: 11, 
+            maxZoom: 17 
+        });
+
+        var aktualnaWarstwa = podczerwienCIR;
+        aktualnaWarstwa.addTo(map);
+
+        var suwak = L.control.sideBySide(prawdziweKolory, aktualnaWarstwa).addTo(map);
+
+        function zmienWarstwe(wybor) {
+            map.removeLayer(aktualnaWarstwa);
+            aktualnaWarstwa = (wybor === 'cir') ? podczerwienCIR : wskaznikNDBI;
+            aktualnaWarstwa.addTo(map);
+            suwak.setRightLayers(aktualnaWarstwa);
+        }
+    </script>
+</body>
+</html>
